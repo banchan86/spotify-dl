@@ -21,6 +21,7 @@ This README would normally document whatever steps are necessary to get spotify-
 to use spotify-dl , you need to install thoses packages :
   * bs4
   * youtube-dl
+  * ffmpeg (for windows)
   
 # MAC OSx
 you can use brew to install youtube-dl :
@@ -39,6 +40,11 @@ use apt-get install to install youtube-dl
 and pip to install bs4
   
     $ pip install beautifulsoup4
+    
+# Windows (tested on Windows 10)
+1. download youtube-dl and ffmpeg to the same folder as spotify-dl
+2. put the folder on the %PATH% variable in Windows
+3. restart computer to use
     
 # How to use ?
 you can either use your spotify account or downloading single track or playlist by providing an ID , ex:
