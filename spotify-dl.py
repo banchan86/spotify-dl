@@ -4,13 +4,13 @@
 #from apiclient.errors import HttpError
 #from oauth2client.tools import argparser
 
-import urllib
-import urllib2
+import urllib.parse as urllib
+import urllib.request as urllib2
 from bs4 import BeautifulSoup
 import argparse
 #import spotify
 import json
-from StringIO import StringIO
+from io import StringIO
 import subprocess
 import traceback
 
@@ -28,48 +28,40 @@ OK      =  GREEN + "[+] " + DEFAULT
 #   Spotify application
 #=======================
 CLIENT_ID=""
-CALL_BACK_URL=""
+CALL_BACK_URL="http://example.com"
 
 # Set DEVELOPER_KEY to the API key value from the APIs & auth > Registered apps
 # tab of
 #   https://cloud.google.com/console
 # Please ensure that you have enabled the YouTube Data API for your project.
-DEVELOPER_KEY = "REPLACE_ME"
+DEVELOPER_KEY = ""
 YOUTUBE_API_SERVICE_NAME = "youtube"
 YOUTUBE_API_VERSION = "v3"
 
 def youtube_search(options):
-  youtube = build(YOUTUBE_API_SERVICE_NAME, YOUTUBE_API_VERSION,
-    developerKey=DEVELOPER_KEY)
+    print(hi)
+    youtube = build(YOUTUBE_API_SERVICE_NAME, YOUTUBE_API_VERSION, developerKey=DEVELOPER_KEY)
 
   # Call the search.list method to retrieve results matching the specified
   # query term.
-  search_response = youtube.search().list(
-    q=options.q,
-    part="id,snippet",
-    maxResults=options.max_results
-  ).execute()
-
-  videos = []
-  channels = []
-  playlists = []
+    search_response = youtube.search().list(q=options.q,part="id,snippet",maxResults=options.max_results).execute()
+    videos = []
+    channels = []
+    playlists = []
 
   # Add each result to the appropriate list, and then display the lists of
   # matching videos, channels, and playlists.
-  for search_result in search_response.get("items", []):
-    if search_result["id"]["kind"] == "youtube#video":
-      videos.append("%s (%s)" % (search_result["snippet"]["title"],
-                                 search_result["id"]["videoId"]))
-    elif search_result["id"]["kind"] == "youtube#channel":
-      channels.append("%s (%s)" % (search_result["snippet"]["title"],
-                                   search_result["id"]["channelId"]))
-    elif search_result["id"]["kind"] == "youtube#playlist":
-      playlists.append("%s (%s)" % (search_result["snippet"]["title"],
-                                    search_result["id"]["playlistId"]))
+    for search_result in search_response.get("items", []):
+        if search_result["id"]["kind"] == "youtube#video":
+            videos.append("%s (%s)" % (search_result["snippet"]["title"],search_result["id"]["videoId"]))
+        elif search_result["id"]["kind"] == "youtube#channel":
+            channels.append("%s (%s)" % (search_result["snippet"]["title"],search_result["id"]["channelId"]))
+        elif search_result["id"]["kind"] == "youtube#playlist":
+            playlists.append("%s (%s)" % (search_result["snippet"]["title"],search_result["id"]["playlistId"]))
 
-  print "Videos:\n", "\n".join(videos), "\n"
-  print "Channels:\n", "\n".join(channels), "\n"
-  print "Playlists:\n", "\n".join(playlists), "\n"
+    print("Videos:\n", "\n".join(videos), "\n")
+    print("Channels:\n", "\n".join(channels), "\n")
+    print("Playlists:\n", "\n".join(playlists), "\n")
 
 def searchYoutube(trackname):
     textToSearch = trackname
@@ -83,48 +75,50 @@ def searchYoutube(trackname):
 
 def getTrackName(id, access_token):
     """ get the spotify track name from id """
-    print ACTION + " getting track name"
+    print(ACTION + " getting track name")
     proc = subprocess.Popen('curl -sS -X GET "https://api.spotify.com/v1/tracks/'+ id +'?market=ES" -H "Authorization: Bearer '+ access_token +'"', shell=True, stdout=subprocess.PIPE)
     tmp = proc.stdout.read()
     #convert from json to string
     #io = StringIO()
     #json.dump(tmp, io)
+    # data = json.loads(tmp)
+    tmp = tmp.decode('utf-8')
     data = json.loads(tmp)
     if 'error' in data:
-        print ERROR + "can't found song name"
-        print ERROR + data['error']['message']
+        print(ERROR + "can't found song name")
+        print(ERROR + data['error']['message'])
         return None
     else:
-        print OK + "name is " + data["name"]
+        print(OK + "name is " + data["name"])
         return data["name"]
 
 def genUrl():
     """ gen url for getting access token """
-    print ACTION + " generating url for access token"
-    print OK +  "https://accounts.spotify.com/authorize?client_id="+ CLIENT_ID + "&response_type=token&redirect_uri=" + CALL_BACK_URL
+    print(ACTION + " generating url for access token")
+    print(OK +  "https://accounts.spotify.com/authorize?client_id="+ CLIENT_ID + "&response_type=token&redirect_uri=" + CALL_BACK_URL)
 
 def getAccessToken():
     """ get access token """
-    print ACTION + " getting access token"
+    print(ACTION + " getting access token")
     proc = subprocess.Popen('curl -sS -X GET "https://accounts.spotify.com/authorize?client_id='+ CLIENT_ID +'&response_type=token&redirect_uri='+ CALL_BACK_URL +'" -H "Accept: application/json"', shell=True, stdout=subprocess.PIPE)
     tmp = proc.stdout.read()
     data = json.loads(tmp)
 
-    print data
+    print(data)
 
 def downloadYoutube(link):
     """ downloading the track """
-    print ACTION + "downloading song .."
+    print(ACTION + "downloading song ..")
     proc = subprocess.Popen('youtube-dl --extract-audio --audio-format mp3 '+ link, shell=True, stdout=subprocess.PIPE)
     tmp = proc.stdout.read()
-    print OK + "Song Downloaded"
+    print(OK + "Song Downloaded")
 
 def header():
 	""" header informations """
-	print RED + "@ spotify-dl.py version 0.0.1"
-	print YELLOW + "@ author : Naper"
-	print BLUE + "@ Designed for OSx/linux"
-	print "" + DEFAULT
+	print(RED + "@ spotify-dl.py version 0.0.1")
+	print(YELLOW + "@ author : Naper")
+	print(BLUE + "@ Designed for OSx/linux")
+	print("" + DEFAULT)
 
 
 if __name__ == "__main__":
@@ -156,8 +150,9 @@ if __name__ == "__main__":
               link = searchYoutube(name)
               downloadYoutube(link)
           else :
-              print ERROR + "use --help for help"
-  except Exception, err:
-    print ERROR + "An HTTP error occurred\n"
+              print(ERROR + "use --help for help")
+  except Exception as err:
+    print(ERROR + "An HTTP error occurred\n")
     if args.traceback:
     	traceback.print_exc()
+
